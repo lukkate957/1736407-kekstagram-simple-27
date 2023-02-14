@@ -21,4 +21,4 @@ const getRandomArrayElement = (elements) => elements[getRandomInteger(0, element
 
 export {
   getRandomInteger,
-  checkStringMaxLength,};
+  getRandomArrayElement,};

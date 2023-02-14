@@ -45,8 +45,6 @@ const createPost = () => ({
   comments: getRandomInteger(CommentsCount.MIN, CommentsCount.MAX),
 });
 
-const createPosts = () => {
-  Array.from({length: POSTS_COUNT}, createPost);
-};
+const createPosts = () => Array.from({length: POSTS_COUNT}, createPost);
 
-createPosts();
+export {createPosts};
