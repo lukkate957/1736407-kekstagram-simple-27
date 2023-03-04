@@ -1,3 +1,4 @@
 import {createPosts} from './data.js';
+import {renderPictures} from './pictures.js';
 
-console.log(createPosts());
+renderPictures(createPosts());
