@@ -1,4 +1,6 @@
 import {isEscapeKey} from './util.js';
+import {setEffectDefault} from './effect-image.js';
+import { setScaleDefault } from './scale-image.js';
 
 const inputImageElement = document.querySelector('#upload-file');
 const userModalElement = document.querySelector('.img-upload__overlay');
@@ -16,7 +18,8 @@ const onPopupEscKeydown = (evt) => {
 function openUserModal () {
   userModalElement.classList.remove('hidden');
   bodyElement.classList.add('modal-open');
-
+  setEffectDefault();
+  setScaleDefault();
   document.addEventListener('keydown', onPopupEscKeydown);
 }
 
@@ -29,8 +32,8 @@ function closeUserModal () {
   document.removeEventListener('keydown', onPopupEscKeydown);
 }
 
-inputImageElement.addEventListener('change', () => {
-  if (inputImageElement.value !== '') {
+inputImageElement.addEventListener('change', (evt) => {
+  if (evt.target.value !== '') {
     openUserModal();
   }
 }
