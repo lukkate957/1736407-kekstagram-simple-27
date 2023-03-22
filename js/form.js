@@ -1,44 +1,143 @@
-import {isEscapeKey} from './util.js';
-import {setEffectDefault} from './effect-image.js';
-import { setScaleDefault } from './scale-image.js';
+import { showAlert, isEscapeKey } from './util.js';
+import { sendData } from './api.js';
+import { onPopupEscKeydown } from './modal.js';
+const imageUploadForm = document.querySelector('.img-upload__form');
+const uploadSubmitButton = document.querySelector('#upload-submit');
 
-const inputImageElement = document.querySelector('#upload-file');
-const userModalElement = document.querySelector('.img-upload__overlay');
-const userModalCloseElement = userModalElement.querySelector('#upload-cancel');
 const bodyElement = document.querySelector('body');
-const commentsElement = document.querySelector('.text__description');
 
-const onPopupEscKeydown = (evt) => {
+const successMessageTemplate = document.querySelector('#success').content.querySelector('.success');
+const successMessageFragment = document.createDocumentFragment();
+const successMessageElement = successMessageTemplate.cloneNode(true);
+const successButton = successMessageElement.querySelector('.success__button');
+const successMessageDiv = successMessageElement.querySelector('.success__inner');
+
+
+const errorMessageTemplate = document.querySelector('#error').content.querySelector('.error');
+const errorMessageFragment = document.createDocumentFragment();
+const errorMessageElement = errorMessageTemplate.cloneNode(true);
+const errorButton = errorMessageElement.querySelector('.error__button');
+const errorMessageDiv = errorMessageElement.querySelector('.error__inner');
+
+
+const onSuccessEscKeydown = (evt) => {
   if (isEscapeKey(evt)) {
     evt.preventDefault();
-    closeUserModal();
+    closeSuccessMessage();
   }
 };
 
-function openUserModal () {
-  userModalElement.classList.remove('hidden');
-  bodyElement.classList.add('modal-open');
-  setEffectDefault();
-  setScaleDefault();
-  document.addEventListener('keydown', onPopupEscKeydown);
-}
+const onErrorEscKeydown = (evt) => {
+  if (isEscapeKey(evt)) {
+    evt.preventDefault();
 
-function closeUserModal () {
-  inputImageElement.value = '';
-  commentsElement.textContent = '';
-  userModalElement.classList.add('hidden');
-  bodyElement.classList.remove('modal-open');
-
-  document.removeEventListener('keydown', onPopupEscKeydown);
-}
-
-inputImageElement.addEventListener('change', (evt) => {
-  if (evt.target.value !== '') {
-    openUserModal();
+    closeErrorMessage();
   }
-}
-);
+};
 
-userModalCloseElement.addEventListener('click', () => {
-  closeUserModal();
+const onSuccessClickOutside = (evt) => {
+  // Проверяем, что клик был произведен за пределами блока сообщения
+
+
+  if (evt.target !== successMessageDiv) {
+    closeSuccessMessage(); // скрываем элемент т к клик был за его пределами
+  }
+};
+
+const onErrorClickOutside = (evt) => {
+  // Проверяем, что клик был произведен за пределами блока сообщения
+
+
+  if (evt.target !== errorMessageDiv) {
+    closeErrorMessage(); // скрываем элемент т к клик был за его пределами
+  }
+};
+
+
+function showSuccessMessage() {
+  successMessageFragment.appendChild(successMessageElement);
+  bodyElement.appendChild(successMessageFragment);
+  document.addEventListener('keydown', onSuccessEscKeydown);
+
+  document.addEventListener('click', onSuccessClickOutside);
+}
+
+function closeSuccessMessage() {
+  successMessageElement.remove();
+
+  document.removeEventListener('keydown', onSuccessEscKeydown);
+  document.removeEventListener('click', onSuccessClickOutside);
+
+
+}
+
+function showErrorMessage() {
+  errorMessageFragment.appendChild(errorMessageElement);
+  bodyElement.appendChild(errorMessageFragment);
+  document.removeEventListener('keydown', onPopupEscKeydown);
+
+  document.addEventListener('keydown', onErrorEscKeydown);
+
+  document.addEventListener('click', onErrorClickOutside);
+}
+
+function closeErrorMessage() {
+  errorMessageElement.remove();
+
+  document.removeEventListener('keydown', onErrorEscKeydown);
+  document.removeEventListener('click', onErrorClickOutside);
+
+
+}
+
+successButton.addEventListener('click', () => {
+  closeSuccessMessage();
 });
+
+
+errorButton.addEventListener('click', () => {
+  closeErrorMessage();
+});
+
+const pristine = new Pristine(imageUploadForm, {
+  classTo: 'img-upload-form__element',
+  errorTextParent: 'img-upload-form__element',
+  errorTextClass: 'img-upload__form__error-text',
+});
+
+const blockSubmitButton = () => {
+  uploadSubmitButton.disabled = true;
+  uploadSubmitButton.textContent = 'Опубликовываю...';
+};
+
+const unblockSubmitButton = () => {
+  uploadSubmitButton.disabled = false;
+  uploadSubmitButton.textContent = 'Опубликовать';
+};
+
+const setUserFormSubmit = (onSuccess) => {
+
+  imageUploadForm.addEventListener('submit', (evt) => {
+    evt.preventDefault();
+
+    const isValid = pristine.validate();
+    if (isValid) {
+      blockSubmitButton();
+      sendData(
+        () => {
+          onSuccess();
+          unblockSubmitButton();
+          showSuccessMessage();
+        },
+        () => {
+          showErrorMessage();
+          unblockSubmitButton();
+
+        },
+        new FormData(evt.target),
+      );
+    }
+  });
+};
+
+export {setUserFormSubmit};

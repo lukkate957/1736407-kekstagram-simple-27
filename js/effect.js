@@ -124,11 +124,10 @@ function changeSlider(evt) {
 }
 
 function setEffectDefault() {
-  if (effectRadioButtonsElements[0].checked) {
-    imageElement.style.filter = '';
-    sliderFieldsetElement.setAttribute('hidden', true);
-    changeEffect();
-  }
+  effectRadioButtonsElements[0].checked = true;
+  imageElement.style.filter = '';
+  sliderFieldsetElement.setAttribute('hidden', true);
+  changeEffect();
 }
 
 function toggleRadio(evt) {
